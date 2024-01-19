@@ -1,0 +1,30 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: CICD Testing
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore ./ApiUnitTesting/ApiUnitTesting.sln
+    - name: Build
+      run: dotnet build ./ApiUnitTesting/ApiUnitTesting.sln --no-restore
+    - name: Unit Test
+      run: dotnet test ./ApiUnitTesting/ApiUnitTesting.UnitTest/ApiUnitTesting.UnitTest.csproj --no-build --verbosity normal
+    - name: Integration Test
+      run: dotnet test ./ApiUnitTesting/ApiIntegrationTest.IntegrationTest/ApiIntegrationTest.IntegrationTest.csproj --no-build --verbosity normal
