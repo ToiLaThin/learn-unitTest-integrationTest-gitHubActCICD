@@ -5,7 +5,7 @@ namespace ApiUnitTesting.Api.Data
 {
     public class AppDbContext: DbContext
     {
-        DbSet<Employee> Employees { get; set; }
+        public DbSet<Employee> Employees { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     }
 }
