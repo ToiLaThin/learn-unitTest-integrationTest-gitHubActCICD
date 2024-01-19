@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using ApiIntegrationTest.IntegrationTest.Data;
+using ApiUnitTesting.Api.Model;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Writers;
@@ -17,7 +19,10 @@ namespace ApiIntegrationTest.IntegrationTest.Extension
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="webHost"></param>
-        public static void MigrateDatabase<TContext>(this IWebHost webHost) where TContext: notnull, DbContext
+        public static void MigrateDatabase<TContext>(
+            this IWebHost webHost,
+            Action<TContext> seeder
+        ) where TContext: notnull, DbContext
         {
             using (var serviceScope = webHost.Services.CreateScope())
             {
@@ -26,6 +31,7 @@ namespace ApiIntegrationTest.IntegrationTest.Extension
 
                 try {
                     context.Database.Migrate();
+                    seeder(context);                    
                 }
                 catch (Exception ex) {
                     throw ex;
@@ -33,4 +39,6 @@ namespace ApiIntegrationTest.IntegrationTest.Extension
             }
         }
     }
+
+    
 }

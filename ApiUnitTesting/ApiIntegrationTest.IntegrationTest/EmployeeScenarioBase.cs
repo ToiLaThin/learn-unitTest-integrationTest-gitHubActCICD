@@ -12,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using ApiIntegrationTest.IntegrationTest.Extension;
 using ApiUnitTesting.Api.Data;
 using System.Text.Json;
+using ApiIntegrationTest.IntegrationTest.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiIntegrationTest.IntegrationTest
 {
@@ -20,6 +22,7 @@ namespace ApiIntegrationTest.IntegrationTest
         /// <summary>
         /// Create a test server represent our test application api
         /// It received a host builder to build host for managing application startup (we need to implement startup class and its methods)
+        /// Everytimes this method call, it migrate db (if not exists) then ResetDb (Clear then Seed data)
         /// </summary>
         /// <returns></returns>
         public static EmployeeTestServer CreateEmployeeTestServer()
@@ -35,7 +38,8 @@ namespace ApiIntegrationTest.IntegrationTest
             .UseStartup<Startup>();
 
             EmployeeTestServer employeeTestServer = new(hostBuilder);
-            employeeTestServer.Host.MigrateDatabase<AppDbContext>();
+            //context is provide inside MigrateDatabase extension method
+            employeeTestServer.Host.MigrateDatabase<AppDbContext>((context) => EmployeeContextSeeder.ResetDb(context));
             return employeeTestServer;
         }
 

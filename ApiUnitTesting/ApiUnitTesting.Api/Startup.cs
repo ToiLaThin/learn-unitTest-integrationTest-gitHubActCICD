@@ -41,6 +41,7 @@ namespace ApiIntegrationTest.IntegrationTest
             services.AddDbContext<AppDbContext>(opt =>
             {
                 opt.UseSqlServer(connString);
+                //opt.UseInMemoryDatabase();
             });
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using FluentAssertions;
 using ApiUnitTesting.Api.Model;
 using Microsoft.EntityFrameworkCore;
+using ApiIntegrationTest.IntegrationTest.Data;
 
 namespace ApiIntegrationTest.IntegrationTest
 {
@@ -30,6 +31,44 @@ namespace ApiIntegrationTest.IntegrationTest
         }
 
         [Fact]
+        public async Task WhenGetAllEmployees_ReturnValidResponse()
+        {
+            // Arrange
+            using EmployeeTestServer testServer = CreateEmployeeTestServer();
+            using HttpClient httpClient = testServer.CreateClient();
+
+            // Act
+            HttpResponseMessage response = await httpClient.GetAsync(Get.GetAllEmployeesEndpoint);
+            IEnumerable<Employee> allExpectedEmployees = EmployeeData.GetSampleEmployees();
+            var actualEmployees = await GetResponseContent<IEnumerable<Employee>>(response);
+
+            // Assert
+            actualEmployees.Should().BeEquivalentTo(allExpectedEmployees);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(4)]
+        [InlineData(5)]
+        //all sample employees id
+        public async Task WhenGetEmployeeByExistingId_ReturnValidResponse(int empId)
+        {
+            // Arrange
+            using EmployeeTestServer testServer = CreateEmployeeTestServer();
+            using HttpClient httpClient = testServer.CreateClient();
+
+            // Act
+            HttpResponseMessage response = await httpClient.GetAsync(Get.GetEmployeeByIdEndpoint + $"/{empId}");
+            IEnumerable<Employee> allEmployees = EmployeeData.GetSampleEmployees();
+            Employee expectedEmployee = allEmployees.FirstOrDefault(e => e.EmployeeId == empId);
+            var actualEmployee = await GetResponseContent<Employee>(response);
+
+            // Assert
+            actualEmployee.Should().NotBeNull();
+            expectedEmployee.Should().BeEquivalentTo(actualEmployee);
+        }
+
+        [Fact]
         public async Task GivenPostNewEmp_WhenGetEmpById_ReturnThePostedEmp()
         {
             // Arrange
@@ -46,11 +85,8 @@ namespace ApiIntegrationTest.IntegrationTest
                 PhoneNumber = "001100223"
             };
 
-            //await testServer.EmployeeContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT [ApiTestDb].[dbo].[Employees] ON;"); NOT WORK SO WE RUN THIS IN SSMS
             await testServer.EmployeeContext.AddAsync(postEmployee);
-            //this will persist the data in the real db
             await testServer.EmployeeContext.SaveChangesAsync();
-            //await testServer.EmployeeContext.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT [ApiTestDb].[dbo].[Employees] OFF;");
 
             // Act
             HttpResponseMessage response = await httpClient
