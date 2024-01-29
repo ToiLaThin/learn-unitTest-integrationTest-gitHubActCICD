@@ -14,18 +14,27 @@ using ApiUnitTesting.Api.Data;
 using System.Text.Json;
 using ApiIntegrationTest.IntegrationTest.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ApiIntegrationTest.IntegrationTest
 {
-    public class EmployeeScenarioBase
+    public class EmployeeScenarioBase: IClassFixture<FixtureTestContainer>
     {
+        protected FixtureTestContainer FixtureTestContainer { get; private set; }
+        public EmployeeScenarioBase(FixtureTestContainer fixtureTestContainer) {
+            FixtureTestContainer = fixtureTestContainer;
+        }
+
+
+
         /// <summary>
         /// Create a test server represent our test application api
         /// It received a host builder to build host for managing application startup (we need to implement startup class and its methods)
         /// Everytimes this method call, it migrate db (if not exists) then ResetDb (Clear then Seed data)
         /// </summary>
         /// <returns></returns>
-        public static EmployeeTestServer CreateEmployeeTestServer()
+        public static EmployeeTestServer CreateEmployeeTestServer(string testContainerString)
         {
             IWebHostBuilder hostBuilder = new WebHostBuilder()
             .UseContentRoot(Directory.GetCurrentDirectory())
@@ -34,6 +43,13 @@ namespace ApiIntegrationTest.IntegrationTest
                 cfgBuilder.SetBasePath(Directory.GetCurrentDirectory())
                           .AddJsonFile("appsettings.json", optional: false)
                           .AddEnvironmentVariables();
+            })
+            .ConfigureServices(services =>
+            {
+                //remove old db context setting & replace with new ones
+                services.Remove(services.SingleOrDefault(service => typeof(DbContextOptions<AppDbContext>) == service.ServiceType));
+                services.Remove(services.SingleOrDefault(service => typeof(DbConnection) == service.ServiceType));
+                services.AddDbContext<AppDbContext>((_, option) => option.UseSqlServer(testContainerString));
             })
             .UseStartup<Startup>();
 

@@ -16,11 +16,16 @@ namespace ApiIntegrationTest.IntegrationTest
 {
     public class EmployeeScenarios : EmployeeScenarioBase
     {
+        public EmployeeScenarios(FixtureTestContainer fixtureTestContainer): base(fixtureTestContainer)
+        {
+
+        }
+
         [Fact]
         public async Task WhenGetAllEmployees_ReturnResponseStatusCodeOk()
         {
             // Arrange
-            using EmployeeTestServer testServer = CreateEmployeeTestServer();
+            using EmployeeTestServer testServer = CreateEmployeeTestServer(base.FixtureTestContainer.ConnectionString);
             using HttpClient httpClient = testServer.CreateClient();
 
             // Act
@@ -34,7 +39,7 @@ namespace ApiIntegrationTest.IntegrationTest
         public async Task WhenGetAllEmployees_ReturnValidResponse()
         {
             // Arrange
-            using EmployeeTestServer testServer = CreateEmployeeTestServer();
+            using EmployeeTestServer testServer = CreateEmployeeTestServer(base.FixtureTestContainer.ConnectionString);
             using HttpClient httpClient = testServer.CreateClient();
 
             // Act
@@ -54,7 +59,7 @@ namespace ApiIntegrationTest.IntegrationTest
         public async Task WhenGetEmployeeByExistingId_ReturnValidResponse(int empId)
         {
             // Arrange
-            using EmployeeTestServer testServer = CreateEmployeeTestServer();
+            using EmployeeTestServer testServer = CreateEmployeeTestServer(base.FixtureTestContainer.ConnectionString);
             using HttpClient httpClient = testServer.CreateClient();
 
             // Act
@@ -73,7 +78,7 @@ namespace ApiIntegrationTest.IntegrationTest
         {
             // Arrange
             // Arrange
-            using EmployeeTestServer testServer = CreateEmployeeTestServer();
+            using EmployeeTestServer testServer = CreateEmployeeTestServer(base.FixtureTestContainer.ConnectionString);
             using HttpClient httpClient = testServer.CreateClient();
 
             Employee postEmployee = new()
